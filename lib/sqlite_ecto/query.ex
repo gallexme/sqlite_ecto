@@ -353,13 +353,13 @@ defmodule Sqlite.Ecto.Query do
 
   defp expr({:in, _, [left, right]}, sources) when is_list(right) do
     args = Enum.map_join(right, ", ", &expr(&1, sources))
-    if args == "", do: args = []
+    args = ensure_args(args)
     [expr(left, sources), "IN (", args, ")"]
   end
 
   defp expr({:in, _, [left, {:^, _, [ix, length]}]}, sources) do
     args = Enum.map_join(ix+1..ix+length, ", ", fn (_) -> "?" end)
-    if args == "", do: args = []
+    args = ensure_args(args)
     [expr(left, sources), "IN (", args, ")"]
   end
 
@@ -595,5 +595,12 @@ defmodule Sqlite.Ecto.Query do
   end
   defp join_qual(:full) do
     raise ArgumentError, "FULL OUTER JOIN not supported by SQLite"
+  end
+
+  defp ensure_args(args) do
+    case args do
+      "" -> []
+      _  -> args
+    end
   end
 end
