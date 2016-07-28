@@ -1,6 +1,14 @@
 defmodule Sqlite.Ecto.Util do
   @moduledoc "Common utilties used by multiple Sqlite.Ecto modules."
 
+
+  @otp_maj_vrs  :erlang.system_info(:otp_release)
+                |> Enum.take_while(&(&1 != ?.))
+                |> to_string
+                |> Integer.parse
+                |> elem(0)
+  @rand_mod if @otp_maj_vrs >= 19, do: :rand, else: :random
+
   # Use Ecto's JSON library (currently Poison) for embedded JSON datatypes.
   def json_library, do: Application.get_env(:ecto, :json_library)
 
@@ -14,7 +22,7 @@ defmodule Sqlite.Ecto.Util do
   end
 
   # Generate a random string.
-  def random_id, do: :random.uniform |> Float.to_string |> String.slice(2..10)
+  def random_id, do: @rand_mod.uniform |> Float.to_string |> String.slice(2..10)
 
   # Quote the given identifier.
   def quote_id({nil, id}), do: quote_id(id)
