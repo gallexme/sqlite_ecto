@@ -36,7 +36,7 @@ defmodule Sqlite.Ecto.Test do
   # return a unique temporary filename
   defp tempfilename do
     1..10
-    |> Enum.map(fn(_) -> :random.uniform(10) - 1 end)
+    |> Enum.map(fn(_) -> Sqlite.Ecto.Util.rand_mod.uniform(10) - 1 end)
     |> Enum.join
     |> (fn(name) -> "/tmp/test_" <> name <> ".db" end).()
   end
@@ -307,7 +307,7 @@ defmodule Sqlite.Ecto.Test do
   alias Ecto.Queryable
 
   defmodule Model do
-    use Ecto.Model
+    use Ecto.Schema
 
     schema "model" do
       field :x, :integer
@@ -324,7 +324,7 @@ defmodule Sqlite.Ecto.Test do
   end
 
   defmodule Model2 do
-    use Ecto.Model
+    use Ecto.Schema
 
     schema "model2" do
       belongs_to :post, Sqlite.Ecto.Test.Model,
@@ -334,7 +334,7 @@ defmodule Sqlite.Ecto.Test do
   end
 
   defmodule Model3 do
-    use Ecto.Model
+    use Ecto.Schema
 
     schema "model3" do
       field :list1, {:array, :string}
