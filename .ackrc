@@ -1,0 +1,2 @@
+--ignore-directory=_build
+--ignore-directory=deps
