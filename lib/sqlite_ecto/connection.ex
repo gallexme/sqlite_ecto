@@ -1,11 +1,13 @@
 if Code.ensure_loaded?(Sqlitex.Server) do
   defmodule Sqlite.Ecto.Connection do
+    # use DBConnection
     @moduledoc false
 
-    @behaviour Ecto.Adapters.SQL.Query
+    use DBConnection
 
     # Connect to a new Sqlite.Server.  Enable and verify the foreign key
     # constraints for the connection.
+    @spec connect(Keyword.t) :: {:ok, pid} | {:error, Sqlite.Ecto.Error.t}
     def connect(opts) do
       {database, opts} = Keyword.pop(opts, :database)
       case Sqlitex.Server.start_link(database, opts) do
@@ -13,11 +15,13 @@ if Code.ensure_loaded?(Sqlitex.Server) do
           :ok = Sqlitex.Server.exec(pid, "PRAGMA foreign_keys = ON")
           [[foreign_keys: 1]] = Sqlitex.Server.query(pid, "PRAGMA foreign_keys")
           {:ok, pid}
-        error -> error
+        {:error, %Sqlite.Ecto.Error{}} = e -> e
+        {:error, term} -> {:error, Sqlite.Ecto.Error.exception(term)}
       end
     end
 
-    def disconnect(pid) do
+    @spec disconnect(Exception.t, pid) :: :ok
+    def disconnect(_, pid) do
       Sqlitex.Server.stop(pid)
       :ok
     end
@@ -51,6 +55,7 @@ if Code.ensure_loaded?(Sqlitex.Server) do
     defdelegate delete_all(query), to: Query
 
     defdelegate insert(prefix, table, fields, returning), to: Query
+    defdelegate insert(prefix, table, fields, rows, returning), to: Query
 
     defdelegate update(prefix, table, fields, filters, returning), to: Query
 

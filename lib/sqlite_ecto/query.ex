@@ -79,6 +79,18 @@ defmodule Sqlite.Ecto.Query do
     assemble ["INSERT INTO", quote_id({prefix, table}), "(", cols, ")", "VALUES (", vals, ")", return]
   end
 
+  def insert(prefix, table, [], _, returning) do
+    return = returning_clause(prefix, table, returning, "INSERT")
+    assemble ["INSERT INTO", quote_id({prefix, table}), "DEFAULT VALUES", return]
+  end
+  def insert(prefix, table, fields, _rows, returning) do
+    # IO.puts :stderr, inspect(_rows)
+    cols = map_intersperse(fields, ",", &quote_id/1)
+    vals = map_intersperse(1..length(fields), ",", &"?#{&1}")
+    return = returning_clause(prefix, table, returning, "INSERT")
+    assemble ["INSERT INTO", quote_id({prefix, table}), "(", cols, ")", "VALUES (", vals, ")", return]
+  end
+
   def update(prefix, table, fields, filters, returning) do
     {vals, count} = Enum.map_reduce(fields, 1, fn (i, acc) ->
       {"#{quote_id(i)} = ?#{acc}", acc + 1}
